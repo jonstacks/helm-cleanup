@@ -1,0 +1,57 @@
+name: 'Helm Cleanup'
+description: 'Cleans up Helm Releases based on criteria'
+inputs:
+  ### Filters
+  release-name-filter:
+    required: false
+    description: >
+      Only cleanup helm releases that match the following regex (Perl compatible). 
+      If you only want to cleanup a single release and know its name, you should
+      probably just run a single `helm uninstall RELEASE_NAME` command instead.
+  last-modified-older-than:
+    required: false
+    description: >
+      Only clean up helm releases that have not been updated in the last X timeframe
+      (e.g. 1h, 1d, 1w, 1m, 1y). Due to helm only storing 
+      Only cleanup helm releases that match the following regex (Perl compatible). 
+      If you only want to cleanup a single release and know its name, you should
+      probably just run a single `helm uninstall RELEASE_NAME` command instead.
+
+  debug:
+    required: false
+    description: Show debug output for each chart that is being cleaned up
+  description:
+    required: false
+    description: Adds a custom description in the history if keep-history is set to true
+  dry-run:
+    required: false
+    description: Simulate an uninstall for each matching release
+  keep-history:
+    required: false
+    description: >
+      If set to true, will retain release histories and mark them as deleted. This is useful 
+      if you want to keep track of what releases were deleted and when.
+  kube-context:
+    required: false
+    description: 'Kube context to use with helm'
+  namespace:
+    required: false
+    description: 'Kube namespace to use with helm'
+  no-hooks:
+    required: false
+    description: If set to true, will prevent hooks from running during uninstall.
+  timeout:
+    required: false
+    description: >
+      Timeout for the helm release to be fully deleted before moving on to the next
+      release.
+  wait:
+    required: false
+    description: >
+      Wait for the helm release to be fully deleted before moving on to the next
+      release. It will wait as long as timeout is set to, which is 5 minutes by default,
+      but could change with future helm releases.
+
+runs:
+  using: node16
+  main: invoke-binary.js
