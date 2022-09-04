@@ -22,7 +22,7 @@ steps:
     ### Filters. At least one filter is required to prevent deleting all releases
     ### accidentally. Filters are additive.
     ###
-    last-modified-older-than: 7d
+    last-modified-older-than: 168h # 7 days
     release-name-filter: 'review-app-.*'
 
     ### Optional ###

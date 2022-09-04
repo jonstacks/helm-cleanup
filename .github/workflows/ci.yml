@@ -24,39 +24,7 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add stable https://charts.helm.sh/stable
         helm repo update
-    - uses: jonstacks/helm-deploy@v0
-      with:
-        release-name: 'test-release'
-        chart: 'bitnami/nginx'
-        namespace: test-namespace
-        create-namespace: true
-        wait: true
-        timeout: 10m
-        sets: >
-          service.type=ClusterIP
-          myValue=test
-    - uses: jonstacks/helm-deploy@v0
-      with:
-        release-name: 'other-release-test'
-        chart: 'bitnami/nginx'
-        namespace: test-namespace
-        create-namespace: true
-        wait: true
-        timeout: 10m
-        sets: >
-          service.type=ClusterIP
-          myValue=test
-    - uses: jonstacks/helm-deploy@v0
-      with:
-        release-name: 'test-release-2'
-        chart: 'bitnami/nginx'
-        namespace: test-namespace
-        create-namespace: true
-        wait: true
-        timeout: 10m
-        sets: >
-          service.type=ClusterIP
-          myValue=test
+    - run: make integration-test
     - if: failure()
       run: |
         kubectl config set-context kind-kind --namespace test-namespace

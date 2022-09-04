@@ -3,8 +3,13 @@ module github.com/jonstacks/helm-cleanup
 go 1.18
 
 require (
-	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
 	github.com/sethvargo/go-githubactions v1.0.0
+	github.com/stretchr/testify v1.8.0
 )
 
-require github.com/sethvargo/go-envconfig v0.6.0 // indirect
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sethvargo/go-envconfig v0.6.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)

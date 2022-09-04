@@ -2,9 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/sethvargo/go-githubactions"
@@ -12,32 +9,6 @@ import (
 
 func parseBool(action *githubactions.Action, name string) bool {
 	return action.GetInput(name) == "true"
-}
-
-func parseStringSlice(action *githubactions.Action, name, delimiter string) []string {
-	return strings.Split(action.GetInput(name), delimiter)
-}
-
-type Filter interface {
-	Args() []string
-}
-
-type LabelFilter struct {
-	Label    string
-	Value    string
-	Operator string
-}
-
-func (f LabelFilter) Args() []string {
-	return []string{"--selector", fmt.Sprintf("%s%s%s", f.Label, f.Operator, f.Value)}
-}
-
-type ReleaseNameFilter struct {
-	Regexp *regexp.Regexp
-}
-
-func (f ReleaseNameFilter) Args() []string {
-	return []string{"--filter", f.Regexp.String()}
 }
 
 type Config struct {
@@ -66,40 +37,36 @@ func NewFromInputs(action *githubactions.Action) (Config, error) {
 	c.KubeContext = action.GetInput("kube-context")
 	c.Namespace = action.GetInput("namespace")
 	c.NoHooks = parseBool(action, "no-hooks")
+	c.Wait = parseBool(action, "wait")
 
 	timeout := action.GetInput("timeout")
 	if timeout != "" {
 		d, err := time.ParseDuration(timeout)
 		if err != nil {
-			return *c, errors.New("Unable to parse timeout")
+			return *c, errors.New("Unable to parse timeout as a duration. See https://pkg.go.dev/time#ParseDuration for valid duration formats.")
 		}
 		c.Timeout = &d
 	}
 
 	releaseNameFilter := action.GetInput("release-name-filter")
 	if releaseNameFilter != "" {
-		re, err := regexp.Compile(releaseNameFilter)
-		if err != nil {
-			return *c, errors.New("Unable to parse release-name-filter as a regular expression")
-		}
-		c.Filters = append(c.Filters, ReleaseNameFilter{Regexp: re})
+		c.Filters = append(c.Filters, ReleaseNameFilter{FilterString: releaseNameFilter})
 	}
 
 	lastModifiedOlderThan := action.GetInput("last-modified-older-than")
 	if lastModifiedOlderThan != "" {
 		d, err := time.ParseDuration(lastModifiedOlderThan)
 		if err != nil {
-			return *c, errors.New("Unable to parse last-modified-older-than as a duration")
+			return *c, errors.New("Unable to parse last-modified-older-than as a duration. See https://pkg.go.dev/time#ParseDuration for valid duration formats.")
 		}
-		c.Filters = append(c.Filters, LabelFilter{
-			Label:    "modifiedAt",
-			Operator: "<",
-			Value:    fmt.Sprintf("%d", time.Now().Unix()-int64(d.Seconds())),
+		c.Filters = append(c.Filters, ModifiedAtLessThanFilter{
+			Now:      time.Now(),
+			Lookback: d,
 		})
 	}
 
 	if len(c.Filters) == 0 {
-		return *c, errors.New("One of release-name-filter or last-modified-older-than are required")
+		return *c, errors.New("One of release-name-filter or last-modified-older-than are required.")
 	}
 
 	return *c, nil
