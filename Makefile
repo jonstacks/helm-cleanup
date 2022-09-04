@@ -1,4 +1,4 @@
-VERSION := 0f91717e54ebffb4f499f0004fdfe87c36fb2962
+VERSION := 48044648aaf91dd892f355543ab16f931af594c4
 
 binaries:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o main-linux-amd64-$(VERSION) 
