@@ -20,14 +20,8 @@ jobs:
       with:
         version: v3.8.0
     - uses: engineerd/setup-kind@v0.5.0
-    - run: |
-        helm repo add bitnami https://charts.bitnami.com/bitnami
-        helm repo add stable https://charts.helm.sh/stable
-        helm repo update
     - run: make integration-test
     - if: failure()
       run: |
-        kubectl config set-context kind-kind --namespace test-namespace
-        helm list --all
-        echo "==========================="
-        kubectl get pods --no-headers | awk '{print $1}' | xargs -L 1 kubectl logs
+        kubectl config set-context kind-kind --namespace helm-cleanup-1
+        helm list --all-namespaces

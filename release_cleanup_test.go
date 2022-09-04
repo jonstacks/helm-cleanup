@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var repoAdd = exec.Command("helm", "repo", "add", "stable", "https://charts.helm.sh/stable")
+var repoAddStable = exec.Command("helm", "repo", "add", "stable", "https://charts.helm.sh/stable")
+var repoAddBitnami = exec.Command("helm", "repo", "add", "bitnami", "https://charts.bitnami.com/bitnami")
 var repoUpdate = exec.Command("helm", "repo", "update")
 var createTestRelease = func(releaseName, namespace string) *exec.Cmd {
 	return exec.Command(
@@ -40,7 +41,8 @@ func TestCleansUpFilteredReleases(t *testing.T) {
 		assert.NoError(t, c.Run())
 	}
 
-	runCommand(repoAdd)
+	runCommand(repoAddStable)
+	runCommand(repoAddBitnami)
 	runCommand(repoUpdate)
 
 	for i := 0; i < 5; i++ {
