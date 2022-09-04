@@ -18,13 +18,21 @@ jobs:
     - uses: actions/setup-go@v3
       with:
         go-version: 1.18.2
-    - uses: azure/setup-kubectl@v1
-    - uses: azure/setup-helm@v1
+    - uses: azure/setup-kubectl@v3
+    - uses: azure/setup-helm@v3
       with:
         version: v3.8.0
     - uses: engineerd/setup-kind@v0.5.0
-    - run: make integration-test
+      with:
+        version: v0.15.0
+        image: kindest/node:v1.24.4
+    - run: kind version
+    - run: kubectl version
+    - run: kubectl get nodes -o wide
+    - run: make test-integration
     - if: failure()
       run: |
         kubectl config set-context kind-kind --namespace helm-cleanup-1
         helm list --all-namespaces
+        kubectl get pods -o wide
+        kubectl describe pods
