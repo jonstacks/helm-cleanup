@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -18,11 +19,11 @@ var createTestRelease = func(releaseName, namespace string) *exec.Cmd {
 	return exec.Command(
 		"helm", "upgrade",
 		"--install",
-		"--atomic",
+		"--debug",
 		"--create-namespace",
 		"--namespace", namespace,
 		"--wait",
-		"--timeout", "5m",
+		"--timeout", "3m",
 		"--set", "service.type=ClusterIP",
 		releaseName, "bitnami/nginx",
 	)
@@ -38,16 +39,22 @@ var getReleases = func(namespace string) (string, error) {
 
 func TestCleansUpFilteredReleases(t *testing.T) {
 	runCommand := func(c *exec.Cmd) {
-		assert.NoError(t, c.Run())
+		c.Stdout = os.Stdout
+		c.Stderr = os.Stderr
+		err := c.Run()
+		if err != nil {
+			assert.FailNow(t, err.Error())
+		}
 	}
+
+	testRelease := func(i int) string { return fmt.Sprintf("test-release-%d", i) }
 
 	runCommand(repoAddStable)
 	runCommand(repoAddBitnami)
 	runCommand(repoUpdate)
 
 	for i := 0; i < 5; i++ {
-		releaseName := fmt.Sprintf("test-release-%d", i)
-		runCommand(createTestRelease(releaseName, "helm-cleanup-1"))
+		runCommand(createTestRelease(testRelease(i), "helm-cleanup-1"))
 	}
 
 	testEnv := map[string]string{
@@ -64,8 +71,14 @@ func TestCleansUpFilteredReleases(t *testing.T) {
 
 		releases, err := getReleases("helm-cleanup-1")
 		assert.NoError(t, err)
-		assert.Contains(t, releases, "test-release-3")
-		assert.NotEmpty(t, releases, "test-release-4")
+
+		for i := 0; i < 3; i++ {
+			assert.NotContains(t, releases, testRelease(i))
+		}
+
+		for i := 3; i < 5; i++ {
+			assert.Contains(t, releases, testRelease(i))
+		}
 	})
 
 	runCommand(cleanupNamespace("helm-cleanup-1"))

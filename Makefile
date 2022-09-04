@@ -7,8 +7,8 @@ binaries:
 test:
 	go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 
-integration-test:
-	go test -v -race -tags=integration .
+test-integration:
+	go test -v -race -timeout=15m -tags=integration .
 
 clean:
 	rm -rf ./bin

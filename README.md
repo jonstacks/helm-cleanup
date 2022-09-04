@@ -12,8 +12,8 @@ My original intent is for this to be used with a scheduled GitHub Action to clea
 
 steps:
 - uses: actions/checkout@v3
-- uses: azure/setup-kubectl@v1
-- uses: azure/setup-helm@v1
+- uses: azure/setup-kubectl@v3
+- uses: azure/setup-helm@v3
   with:
     version: v3.8.0
 - uses: jonstacks/helm-cleanup@v0
